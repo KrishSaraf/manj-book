@@ -32,8 +32,8 @@ app.use(cors({
   ],
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Simplified Cloudinary upload function for Netlify compatibility
 const uploadToCloudinary = async (fileBuffer, fileName) => {
@@ -116,8 +116,27 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Auth routes
-app.post('/api/auth/login', async (req, res) => {
+// Root path for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Nature Blog API', 
+    endpoints: ['/health', '/auth/login', '/blog/posts'],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Nature Blog API is running!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Auth routes (removed /api prefix)
+app.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -154,11 +173,11 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/verify', verifyToken, (req, res) => {
+app.get('/auth/verify', verifyToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
-app.get('/api/auth/profile', verifyToken, (req, res) => {
+app.get('/auth/profile', verifyToken, (req, res) => {
   const user = users.find(u => u.id === req.user.id);
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
@@ -172,8 +191,8 @@ app.get('/api/auth/profile', verifyToken, (req, res) => {
   });
 });
 
-// Blog routes - Public
-app.get('/api/blog/posts', (req, res) => {
+// Blog routes - Public (removed /api prefix)
+app.get('/blog/posts', (req, res) => {
   try {
     const { page = 1, limit = 10, category, search } = req.query;
     const pageNum = parseInt(page);
@@ -220,7 +239,7 @@ app.get('/api/blog/posts', (req, res) => {
   }
 });
 
-app.get('/api/blog/posts/:id', (req, res) => {
+app.get('/blog/posts/:id', (req, res) => {
   try {
     const { id } = req.params;
     const post = posts.find(p => p.id === parseInt(id) && p.is_published === 1);
@@ -236,7 +255,7 @@ app.get('/api/blog/posts/:id', (req, res) => {
   }
 });
 
-app.get('/api/blog/categories', (req, res) => {
+app.get('/blog/categories', (req, res) => {
   try {
     const categories = [...new Set(posts.filter(p => p.is_published === 1).map(p => p.category))];
     res.json(categories);
@@ -246,8 +265,8 @@ app.get('/api/blog/categories', (req, res) => {
   }
 });
 
-// Blog routes - Admin
-app.get('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
+// Blog routes - Admin (removed /api prefix)
+app.get('/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   try {
     const sortedPosts = posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     res.json(sortedPosts);
@@ -257,7 +276,7 @@ app.get('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   }
 });
 
-app.post('/api/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
+app.post('/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { title, content, excerpt, category = 'general', tags, is_published = true } = req.body;
 
@@ -307,7 +326,7 @@ app.post('/api/blog/admin/posts', verifyToken, requireAdmin, upload.single('feat
   }
 });
 
-app.put('/api/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
+app.put('/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, excerpt, category, tags, is_published } = req.body;
@@ -354,7 +373,7 @@ app.put('/api/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('f
   }
 });
 
-app.delete('/api/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
+app.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const postIndex = posts.findIndex(p => p.id === parseInt(id));
@@ -370,24 +389,6 @@ app.delete('/api/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) =>
     console.error('Delete post error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    message: 'Nature Blog API is running!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Root path for testing
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Nature Blog API', 
-    endpoints: ['/api/health', '/api/auth/login', '/api/blog/posts'] 
-  });
 });
 
 // Export serverless function

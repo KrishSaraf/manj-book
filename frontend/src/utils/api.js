@@ -3,10 +3,6 @@ import axios from 'axios';
 // API base URL configuration
 const getBaseURL = () => {
   // Always use Netlify Functions - no separate backend needed!
-  if (process.env.NODE_ENV === 'production') {
-    return '/.netlify/functions/api';
-  }
-  // In development with Netlify Dev
   return '/.netlify/functions/api';
 };
 
