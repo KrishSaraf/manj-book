@@ -48,6 +48,14 @@ const HomePage = () => {
                 Join me on literary adventures and peaceful reflections in this 
                 nature-inspired corner of the internet.
               </p>
+              
+              {/* Personal Introduction */}
+              <div className="max-w-2xl mx-auto mt-8 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-sage-200/50 shadow-soft">
+                <p className="text-sage-800 leading-relaxed">
+                  Hi, I'm <span className="font-semibold text-forest-700">Manjari Bagri</span> — an economics enthusiast with experience across finance at companies like Louis Dreyfus Company and EY. 
+                  When I'm not diving into market analysis or research, you'll find me lost in books and sharing the stories that shape my world.
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
