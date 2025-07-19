@@ -213,25 +213,30 @@ Modify the category options in:
 
 ## 🚀 Deployment
 
-### Production Build
-```bash
-# Build the frontend
-npm run build
+### Quick Deployment Guide
 
-# Start production server
-npm start
-```
+1. **Backend**: Deploy to Railway, Render, or Heroku
+2. **Frontend**: Deploy to Netlify with your custom domain  
+3. **Environment Variables**: Set `REACT_APP_API_URL` in Netlify pointing to your backend
 
-### Environment Variables for Production
-Make sure to set secure values for:
-- `JWT_SECRET`: Use a long, random string
-- `ADMIN_PASSWORD`: Use a strong password
+**📋 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.**
+
+### One-Click Deploy Options
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/KrishSaraf/manj-book)
+
+For Railway backend deployment, connect your GitHub repo and select the `backend` folder.
+
+### Production Environment Variables
+
+**Backend hosting service:**
 - `NODE_ENV=production`
+- `JWT_SECRET`: Use a long, random string  
+- `PORT=5000`
+- `FRONTEND_URL`: Your Netlify domain
 
-### Hosting Recommendations
-- **Frontend**: Netlify, Vercel, or any static hosting
-- **Backend**: Railway, Heroku, DigitalOcean, or any Node.js hosting
-- **Database**: SQLite file will be created automatically
+**Netlify:**
+- `REACT_APP_API_URL`: Your backend API URL with `/api`
 
 ## 🤝 Features for Your Girlfriend
 

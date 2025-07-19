@@ -1,10 +1,18 @@
 import axios from 'axios';
 
+// API base URL configuration
+const getBaseURL = () => {
+  // In production, use environment variable or default
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.REACT_APP_API_URL || 'https://your-backend-domain.com/api';
+  }
+  // In development, use proxy
+  return '/api';
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://your-api-domain.com/api' 
-    : '/api',
+  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -119,10 +127,13 @@ export const apiUtils = {
   formatImageUrl: (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http')) return imagePath;
-    // In development, use the proxy. In production, use the full domain
-    return process.env.NODE_ENV === 'production' 
-      ? `https://your-api-domain.com${imagePath}`
-      : imagePath; // This will use the proxy configured in package.json
+    
+    // Get base URL for images
+    const baseURL = process.env.NODE_ENV === 'production' 
+      ? (process.env.REACT_APP_API_URL || 'https://your-backend-domain.com/api').replace('/api', '')
+      : ''; // In development, use proxy
+    
+    return `${baseURL}${imagePath}`;
   },
 };
 
