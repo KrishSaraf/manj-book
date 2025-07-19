@@ -23,8 +23,15 @@ const upload = multer({
   }
 });
 
-// Middleware
-app.use(cors());
+// Middleware - Configure CORS for custom domain
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://museminutesbymanjari.com',
+    /\.netlify\.app$/
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -367,7 +374,20 @@ app.delete('/api/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) =>
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Nature Blog API is running!' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Nature Blog API is running!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Root path for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Nature Blog API', 
+    endpoints: ['/api/health', '/api/auth/login', '/api/blog/posts'] 
+  });
 });
 
 // Export serverless function
