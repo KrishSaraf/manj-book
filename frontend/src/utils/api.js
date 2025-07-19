@@ -1,14 +1,10 @@
 import axios from 'axios';
 
-// API base URL configuration
-const getBaseURL = () => {
-  // Always use Netlify Functions - no separate backend needed!
-  return '/.netlify/functions/api';
-};
+// API base URL configuration (kept for reference, but we'll use absolute paths)
+const API_BASE_PATH = '/.netlify/functions/api';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -33,73 +29,42 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("API Error:", error.response);
     if (error.response?.status === 401) {
       // Clear invalid token
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      window.location.href = '/admin/login';
+      // Use replace to prevent user from navigating back to the broken page
+      window.location.replace('/admin/login'); 
     }
     return Promise.reject(error);
   }
 );
 
-// Auth API calls
+// Auth API calls - USING ABSOLUTE PATHS
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  verifyToken: () => api.get('/auth/verify'),
-  getProfile: () => api.get('/auth/profile'),
-  changePassword: (data) => api.put('/auth/change-password', data),
+  login: (credentials) => api.post(`${API_BASE_PATH}/auth/login`, credentials),
+  verifyToken: () => api.get(`${API_BASE_PATH}/auth/verify`),
+  getProfile: () => api.get(`${API_BASE_PATH}/auth/profile`),
 };
 
-// Blog API calls
+// Blog API calls (Public) - USING ABSOLUTE PATHS
 export const blogAPI = {
-  // Public endpoints
-  getPosts: (params = {}) => api.get('/blog/posts', { params }),
-  getPost: (id) => api.get(`/blog/posts/${id}`),
-  getCategories: () => api.get('/blog/categories'),
-  
-  // Admin endpoints
-  getAdminPosts: () => api.get('/blog/admin/posts'),
-  createPost: (data) => {
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
-        // Handle boolean values properly
-        if (key === 'is_published') {
-          formData.append(key, data[key] ? '1' : '0');
-        } else {
-          formData.append(key, data[key]);
-        }
-      }
-    });
-    return api.post('/blog/admin/posts', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  },
-  updatePost: (id, data) => {
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
-        // Handle boolean values properly
-        if (key === 'is_published') {
-          formData.append(key, data[key] ? '1' : '0');
-        } else {
-          formData.append(key, data[key]);
-        }
-      }
-    });
-    return api.put(`/blog/admin/posts/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  },
-  deletePost: (id) => api.delete(`/blog/admin/posts/${id}`),
-  uploadImage: (file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    return api.post('/blog/admin/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  },
+  getPosts: (params) => api.get(`${API_BASE_PATH}/blog/posts`, { params }),
+  getPostById: (id) => api.get(`${API_BASE_PATH}/blog/posts/${id}`),
+  getCategories: () => api.get(`${API_BASE_PATH}/blog/categories`),
+};
+
+// Blog API calls (Admin) - USING ABSOLUTE PATHS
+export const adminAPI = {
+  getPosts: () => api.get(`${API_BASE_PATH}/blog/admin/posts`),
+  createPost: (formData) => api.post(`${API_BASE_PATH}/blog/admin/posts`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  updatePost: (id, formData) => api.put(`${API_BASE_PATH}/blog/admin/posts/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  deletePost: (id) => api.delete(`${API_BASE_PATH}/blog/admin/posts/${id}`),
 };
 
 // General API utilities
