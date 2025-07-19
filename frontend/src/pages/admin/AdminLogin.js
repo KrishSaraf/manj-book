@@ -46,12 +46,14 @@ const AdminLogin = () => {
     }
 
     setIsLoading(true);
-    const result = await login(formData);
+    // The login function in useAuth handles success by updating context.
+    // We just need to call it and let the component re-render.
+    // It will set an error state on failure.
+    await login(formData); 
     setIsLoading(false);
 
-    if (result.success) {
-      navigate(from, { replace: true });
-    }
+    // The redirect logic is handled by the useEffect that watches for
+    // the `isAuthenticated` state change. No need to check for a result here.
   };
 
   return (
