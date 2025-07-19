@@ -5,7 +5,7 @@ import { Leaf, Menu, X, BookOpen, Home, User, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const location = useLocation();
 
   const isActive = (path) => {

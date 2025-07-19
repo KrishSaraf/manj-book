@@ -7,7 +7,6 @@ import {
   Plus, 
   BookOpen, 
   Edit3, 
-  BarChart3, 
   Calendar,
   Leaf,
   Eye,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { blogAPI, apiUtils } from '../../utils/api';
+import { blogAPI } from '../../utils/api';
 import { Plus, Edit3, Trash2, Eye, EyeOff, Calendar, Search, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 

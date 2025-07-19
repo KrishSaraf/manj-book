@@ -11,7 +11,6 @@ import {
   Upload,
   Leaf,
   BookOpen,
-  Tag,
   FileText
 } from 'lucide-react';
 
@@ -35,7 +34,6 @@ const CreatePost = () => {
   });
 
   const watchedContent = watch('content');
-  const watchedTitle = watch('title');
 
   // Create post mutation
   const createMutation = useMutation(

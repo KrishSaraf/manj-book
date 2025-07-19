@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useForm } from 'react-hook-form';
@@ -9,7 +9,6 @@ import {
   ArrowLeft, 
   Image, 
   Upload,
-  Leaf,
   BookOpen,
   FileText,
   Trash2
