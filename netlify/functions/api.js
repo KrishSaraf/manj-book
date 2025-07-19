@@ -124,7 +124,6 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// FIXED ROUTING FOR NETLIFY FUNCTIONS
 // Create a router to handle all routes
 const router = express.Router();
 
@@ -139,15 +138,13 @@ router.get('/', (req, res) => {
   });
 });
 
-// Health check
+// Health check - This will now be at /.netlify/functions/api/health
 router.get('/health', (req, res) => {
   console.log('Health check accessed');
   res.json({ 
     status: 'ok', 
     message: 'Nature Blog API is running!',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime()
   });
 });
 
@@ -423,8 +420,8 @@ router.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => 
   }
 });
 
-// Use the router
-app.use('/', router);
+// Use the router under the correct base path for Netlify
+app.use('/.netlify/functions/api', router);
 
 // Catch-all handler for debugging
 app.use('*', (req, res) => {
