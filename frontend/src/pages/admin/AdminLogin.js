@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Leaf, Lock, User, Eye, EyeOff, TreePine, Flower } from 'lucide-react';
 
@@ -12,7 +12,6 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, isAuthenticated, error, clearError } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/admin';
