@@ -38,6 +38,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
   next();
 });
 
@@ -122,29 +124,23 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Root path for testing - Multiple route handlers for different paths
-app.get('/', (req, res) => {
-  console.log('Root path accessed');
+// FIXED ROUTING FOR NETLIFY FUNCTIONS
+// Create a router to handle all routes
+const router = express.Router();
+
+// Root path
+router.get('/', (req, res) => {
+  console.log('API Root accessed');
   res.json({ 
     message: 'Nature Blog API', 
     endpoints: ['/health', '/auth/login', '/blog/posts'],
     timestamp: new Date().toISOString(),
-    status: 'active'
+    status: 'WORKING'
   });
 });
 
-app.get('/.netlify/functions/api', (req, res) => {
-  console.log('Full path accessed');
-  res.json({ 
-    message: 'Nature Blog API', 
-    endpoints: ['/health', '/auth/login', '/blog/posts'],
-    timestamp: new Date().toISOString(),
-    status: 'active'
-  });
-});
-
-// Health check - Multiple route handlers
-app.get('/health', (req, res) => {
+// Health check
+router.get('/health', (req, res) => {
   console.log('Health check accessed');
   res.json({ 
     status: 'ok', 
@@ -155,39 +151,37 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.get('/.netlify/functions/api/health', (req, res) => {
-  console.log('Full health path accessed');
+// Test endpoint
+router.get('/test', (req, res) => {
   res.json({ 
-    status: 'ok', 
-    message: 'Nature Blog API is running!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime()
+    message: 'Test endpoint working', 
+    path: req.path, 
+    url: req.url,
+    originalUrl: req.originalUrl 
   });
 });
 
-// Test endpoint to debug routing
-app.get('/test', (req, res) => {
-  res.json({ message: 'Test endpoint working', path: req.path, url: req.url });
-});
-
-// Auth routes (removed /api prefix)
-app.post('/auth/login', async (req, res) => {
+// Auth routes
+router.post('/auth/login', async (req, res) => {
   try {
-    console.log('Login attempt:', req.body?.username);
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Body:', req.body);
     const { username, password } = req.body;
 
     if (!username || !password) {
+      console.log('Missing username or password');
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
     const user = users.find(u => u.username === username);
     if (!user) {
+      console.log('User not found:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.log('Invalid password for user:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -199,7 +193,7 @@ app.post('/auth/login', async (req, res) => {
       name: user.name
     };
 
-    console.log('Login successful for:', username);
+    console.log('=== LOGIN SUCCESS ===', username);
     res.json({
       message: 'Login successful',
       token,
@@ -211,11 +205,11 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-app.get('/auth/verify', verifyToken, (req, res) => {
+router.get('/auth/verify', verifyToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
-app.get('/auth/profile', verifyToken, (req, res) => {
+router.get('/auth/profile', verifyToken, (req, res) => {
   const user = users.find(u => u.id === req.user.id);
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
@@ -229,8 +223,8 @@ app.get('/auth/profile', verifyToken, (req, res) => {
   });
 });
 
-// Blog routes - Public (removed /api prefix)
-app.get('/blog/posts', (req, res) => {
+// Blog routes - Public
+router.get('/blog/posts', (req, res) => {
   try {
     const { page = 1, limit = 10, category, search } = req.query;
     const pageNum = parseInt(page);
@@ -277,7 +271,7 @@ app.get('/blog/posts', (req, res) => {
   }
 });
 
-app.get('/blog/posts/:id', (req, res) => {
+router.get('/blog/posts/:id', (req, res) => {
   try {
     const { id } = req.params;
     const post = posts.find(p => p.id === parseInt(id) && p.is_published === 1);
@@ -293,7 +287,7 @@ app.get('/blog/posts/:id', (req, res) => {
   }
 });
 
-app.get('/blog/categories', (req, res) => {
+router.get('/blog/categories', (req, res) => {
   try {
     const categories = [...new Set(posts.filter(p => p.is_published === 1).map(p => p.category))];
     res.json(categories);
@@ -303,8 +297,8 @@ app.get('/blog/categories', (req, res) => {
   }
 });
 
-// Blog routes - Admin (removed /api prefix)
-app.get('/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
+// Blog routes - Admin
+router.get('/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   try {
     const sortedPosts = posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     res.json(sortedPosts);
@@ -314,7 +308,7 @@ app.get('/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   }
 });
 
-app.post('/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
+router.post('/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { title, content, excerpt, category = 'general', tags, is_published = true } = req.body;
 
@@ -364,7 +358,7 @@ app.post('/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured
   }
 });
 
-app.put('/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
+router.put('/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, excerpt, category, tags, is_published } = req.body;
@@ -411,7 +405,7 @@ app.put('/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featu
   }
 });
 
-app.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
+router.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const postIndex = posts.findIndex(p => p.id === parseInt(id));
@@ -429,9 +423,12 @@ app.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
   }
 });
 
+// Use the router
+app.use('/', router);
+
 // Catch-all handler for debugging
 app.use('*', (req, res) => {
-  console.log('Unmatched route:', req.method, req.originalUrl, req.path);
+  console.log('UNMATCHED ROUTE:', req.method, req.originalUrl, req.path);
   res.status(404).json({ 
     error: 'Route not found',
     method: req.method,
