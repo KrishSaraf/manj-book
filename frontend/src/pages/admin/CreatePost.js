@@ -17,9 +17,9 @@ import {
 
 const CreatePost = () => {
   const [preview, setPreview] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  // Image uploads temporarily disabled for Netlify Functions simplicity
+  // const [imageFile, setImageFile] = useState(null);
+  // const [imagePreview, setImagePreview] = useState(null);
   
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -49,23 +49,23 @@ const CreatePost = () => {
     }
   );
 
-  // Handle image upload
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // Image upload temporarily disabled for simplicity
+  // const handleImageChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setImageFile(file);
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setImagePreview(reader.result);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const onSubmit = async (data) => {
     const formData = {
       ...data,
-      featured_image: imageFile,
+      // featured_image: imageFile, // Disabled for now
       tags: data.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
     };
 
@@ -269,7 +269,7 @@ Code block
                 </div>
               </div>
 
-              {/* Featured Image */}
+              {/* Featured Image - Temporarily disabled for Netlify Functions simplicity
               <div className="card p-6">
                 <h3 className="text-lg font-display font-semibold text-forest-900 mb-4">
                   Featured Image
@@ -313,6 +313,7 @@ Code block
                   </label>
                 </div>
               </div>
+              */}
 
               {/* Post Meta */}
               <div className="card p-6">

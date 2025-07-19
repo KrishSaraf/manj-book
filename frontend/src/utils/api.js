@@ -2,12 +2,12 @@ import axios from 'axios';
 
 // API base URL configuration
 const getBaseURL = () => {
-  // In production, use environment variable or default
+  // Always use Netlify Functions - no separate backend needed!
   if (process.env.NODE_ENV === 'production') {
-    return process.env.REACT_APP_API_URL || 'https://your-backend-domain.com/api';
+    return '/.netlify/functions/api';
   }
-  // In development, use proxy
-  return '/api';
+  // In development with Netlify Dev
+  return '/.netlify/functions/api';
 };
 
 // Create axios instance with base configuration
@@ -128,12 +128,9 @@ export const apiUtils = {
     if (!imagePath) return null;
     if (imagePath.startsWith('http')) return imagePath;
     
-    // Get base URL for images
-    const baseURL = process.env.NODE_ENV === 'production' 
-      ? (process.env.REACT_APP_API_URL || 'https://your-backend-domain.com/api').replace('/api', '')
-      : ''; // In development, use proxy
-    
-    return `${baseURL}${imagePath}`;
+    // With Netlify Functions, images would be handled differently
+    // For now, return placeholder or the path as-is
+    return imagePath;
   },
 };
 
