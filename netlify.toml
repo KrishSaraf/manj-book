@@ -1,11 +1,11 @@
 [build]
   base = "."
   publish = "frontend/build"
-  command = "npm run install-all && npm run build"
+  command = "npm install && cd frontend && npm install && npm run build"
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "18.17.0"
   NPM_VERSION = "9"
 
 # Redirect rules for SPA
