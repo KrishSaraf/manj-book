@@ -10,10 +10,66 @@ const serverless = require('serverless-http');
 // Create Express app
 const app = express();
 
+// Configure multer for handling file uploads in memory
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Cloudinary upload function
+const uploadToCloudinary = async (fileBuffer, fileName) => {
+  try {
+    // Use Cloudinary's upload API
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'demo'; // You'll set this in Netlify
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'ml_default'; // You'll set this too
+    
+    const formData = new FormData();
+    const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
+    formData.append('file', blob, fileName);
+    formData.append('upload_preset', uploadPreset);
+    
+    // For simplicity, let's use a basic approach - convert buffer to base64
+    const base64Image = fileBuffer.toString('base64');
+    const dataURI = `data:image/jpeg;base64,${base64Image}`;
+    
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file: dataURI,
+        upload_preset: uploadPreset,
+        folder: 'manj-book'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Cloudinary upload failed');
+    }
+    
+    const result = await response.json();
+    return result.secure_url;
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    // Fallback: return a placeholder
+    return `https://via.placeholder.com/400x300/4ade80/ffffff?text=${encodeURIComponent(fileName)}`;
+  }
+};
 
 // Simple in-memory storage (for demo - in production you'd use a real database)
 let posts = [
@@ -22,7 +78,7 @@ let posts = [
     title: "Welcome to Manjari's Nature Blog",
     content: "# Welcome!\n\nThis is where I'll share my thoughts on books, nature, and life. Looking forward to this journey!",
     excerpt: "Welcome to my digital garden where books and nature intertwine.",
-    featured_image: null,
+    featured_image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=400&fit=crop",
     category: "general",
     tags: ["welcome", "introduction"],
     is_published: 1,
@@ -219,7 +275,7 @@ app.get('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   }
 });
 
-app.post('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
+app.post('/api/blog/admin/posts', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { title, content, excerpt, category = 'general', tags, is_published = true } = req.body;
 
@@ -230,12 +286,24 @@ app.post('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(tag => tag.trim()) : []);
     const publishedValue = is_published === 'true' || is_published === true || is_published === '1' || is_published === 1 ? 1 : 0;
 
+    let featured_image = null;
+    
+    // Handle image upload if provided
+    if (req.file) {
+      try {
+        featured_image = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+      } catch (error) {
+        console.error('Image upload error:', error);
+        // Continue without image if upload fails
+      }
+    }
+
     const newPost = {
       id: Math.max(...posts.map(p => p.id), 0) + 1,
       title,
       content,
       excerpt: excerpt || '',
-      featured_image: null, // File uploads would need separate handling in serverless
+      featured_image,
       category,
       tags: tagsArray,
       is_published: publishedValue,
@@ -257,7 +325,7 @@ app.post('/api/blog/admin/posts', verifyToken, requireAdmin, (req, res) => {
   }
 });
 
-app.put('/api/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
+app.put('/api/blog/admin/posts/:id', verifyToken, requireAdmin, upload.single('featured_image'), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, excerpt, category, tags, is_published } = req.body;
@@ -270,11 +338,24 @@ app.put('/api/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(tag => tag.trim()) : []);
     const publishedValue = is_published === 'true' || is_published === true || is_published === '1' || is_published === 1 ? 1 : 0;
 
+    let featured_image = posts[postIndex].featured_image; // Keep existing image
+    
+    // Handle new image upload if provided
+    if (req.file) {
+      try {
+        featured_image = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+      } catch (error) {
+        console.error('Image upload error:', error);
+        // Keep existing image if upload fails
+      }
+    }
+
     posts[postIndex] = {
       ...posts[postIndex],
       title: title || posts[postIndex].title,
       content: content || posts[postIndex].content,
       excerpt: excerpt !== undefined ? excerpt : posts[postIndex].excerpt,
+      featured_image,
       category: category || posts[postIndex].category,
       tags: tagsArray,
       is_published: publishedValue,

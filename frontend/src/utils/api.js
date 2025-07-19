@@ -126,10 +126,11 @@ export const apiUtils = {
   // Helper for formatting image URLs
   formatImageUrl: (imagePath) => {
     if (!imagePath) return null;
+    // If it's already a full URL (Cloudinary, Unsplash, etc.), return as-is
     if (imagePath.startsWith('http')) return imagePath;
     
-    // With Netlify Functions, images would be handled differently
-    // For now, return placeholder or the path as-is
+    // For relative paths, you might need to handle differently
+    // For now, assume it's already a valid URL
     return imagePath;
   },
 };

@@ -215,11 +215,11 @@ Modify the category options in:
 
 ### Quick Deployment Guide
 
-1. **Backend**: Deploy to Railway, Render, or Heroku
-2. **Frontend**: Deploy to Netlify with your custom domain  
-3. **Environment Variables**: Set `REACT_APP_API_URL` in Netlify pointing to your backend
+1. **Deploy to Netlify**: Everything (frontend + backend) in one place!
+2. **Add your custom domain** in Netlify settings
+3. **Setup image uploads**: Follow [CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md) (optional, 5 minutes)
 
-**📋 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.**
+**📋 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions.**
 
 ### One-Click Deploy Options
 

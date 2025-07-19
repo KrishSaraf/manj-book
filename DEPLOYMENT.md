@@ -4,57 +4,19 @@ This guide will help you deploy the Manj Book blog to production with Netlify fr
 
 ## 📋 Overview
 
-- **Frontend**: Deployed to Netlify with your custom domain
-- **Backend**: Deployed to Railway, Render, or Heroku
-- **Database**: SQLite (will automatically create on backend deployment)
+- **Everything**: Deployed to Netlify (frontend + backend functions)
+- **Database**: In-memory storage (posts persist during function lifecycle)
+- **Images**: Cloudinary (free CDN hosting)
 
-## 🎯 Step 1: Deploy Backend (Choose One)
+## 🚀 Step 1: Deploy Everything to Netlify
 
-### Option A: Railway (Recommended - Free tier available)
-
-1. Go to [railway.app](https://railway.app) and sign up with GitHub
-2. Click "Deploy from GitHub repo"
-3. Select your `manj-book` repository
-4. Choose "Deploy from subdirectory" → `backend`
-5. Railway will automatically detect Node.js and deploy
-6. Once deployed, copy your Railway app URL (looks like: `https://your-app.railway.app`)
-
-### Option B: Render
-
-1. Go to [render.com](https://render.com) and sign up
-2. Click "New Web Service"
-3. Connect your GitHub repository
-4. Configure:
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-5. Once deployed, copy your Render app URL
-
-### Option C: Heroku
-
-1. Install Heroku CLI and login
-2. In your project root:
-```bash
-cd backend
-git init
-git add .
-git commit -m "Backend for Heroku"
-heroku create your-app-name
-git push heroku main
-```
-
-## 🌐 Step 2: Deploy Frontend to Netlify
-
-### Automatic Deployment (Recommended)
+### Automatic Deployment (Super Easy!)
 
 1. Go to [netlify.app](https://netlify.app) and login
-2. Click "Add new site" → "Import an existing project"
-3. Connect your GitHub repository
+2. Click "Add new site" → "Import an existing project"  
+3. Connect your GitHub repository (`KrishSaraf/manj-book`)
 4. Netlify will automatically detect the `netlify.toml` configuration
-5. Before deploying, add environment variables:
-   - Go to **Site settings** → **Environment variables**
-   - Add: `REACT_APP_API_URL` = `https://your-backend-url.com/api`
-   - (Replace with your actual backend URL from Step 1)
+5. Click **"Deploy site"** - that's it! 🎉
 
 ### Manual Deployment
 
@@ -66,7 +28,7 @@ npm run build
 # Then drag the `build` folder to Netlify's deployment area
 ```
 
-## ⚙️ Step 3: Configure Your Custom Domain
+## 🌐 Step 2: Configure Your Custom Domain
 
 1. In Netlify dashboard, go to **Domain settings**
 2. Click "Add custom domain"
@@ -74,15 +36,14 @@ npm run build
 4. Follow Netlify's DNS configuration instructions
 5. Enable HTTPS (automatic with Netlify)
 
-## 🔧 Step 4: Environment Variables
+## 📸 Step 3: Setup Image Uploads (Optional)
 
-Make sure these are set in Netlify:
+Follow the simple guide: [CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md)
+- 5 minutes to setup
+- Free Cloudinary account
+- Professional image hosting with CDN
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `REACT_APP_API_URL` | `https://your-backend-url.com/api` | Your backend API URL |
-
-## 🔐 Step 5: Admin Access
+## 🔐 Step 4: Admin Access
 
 1. Visit your site: `https://yourdomain.com`
 2. Go to `/admin/login`
