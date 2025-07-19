@@ -35,6 +35,12 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
+
 // Simplified Cloudinary upload function for Netlify compatibility
 const uploadToCloudinary = async (fileBuffer, fileName) => {
   try {
@@ -116,28 +122,59 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Root path for testing
+// Root path for testing - Multiple route handlers for different paths
 app.get('/', (req, res) => {
+  console.log('Root path accessed');
   res.json({ 
     message: 'Nature Blog API', 
     endpoints: ['/health', '/auth/login', '/blog/posts'],
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    status: 'active'
   });
 });
 
-// Health check
+app.get('/.netlify/functions/api', (req, res) => {
+  console.log('Full path accessed');
+  res.json({ 
+    message: 'Nature Blog API', 
+    endpoints: ['/health', '/auth/login', '/blog/posts'],
+    timestamp: new Date().toISOString(),
+    status: 'active'
+  });
+});
+
+// Health check - Multiple route handlers
 app.get('/health', (req, res) => {
+  console.log('Health check accessed');
   res.json({ 
     status: 'ok', 
     message: 'Nature Blog API is running!',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
   });
+});
+
+app.get('/.netlify/functions/api/health', (req, res) => {
+  console.log('Full health path accessed');
+  res.json({ 
+    status: 'ok', 
+    message: 'Nature Blog API is running!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
+// Test endpoint to debug routing
+app.get('/test', (req, res) => {
+  res.json({ message: 'Test endpoint working', path: req.path, url: req.url });
 });
 
 // Auth routes (removed /api prefix)
 app.post('/auth/login', async (req, res) => {
   try {
+    console.log('Login attempt:', req.body?.username);
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -162,6 +199,7 @@ app.post('/auth/login', async (req, res) => {
       name: user.name
     };
 
+    console.log('Login successful for:', username);
     res.json({
       message: 'Login successful',
       token,
@@ -389,6 +427,18 @@ app.delete('/blog/admin/posts/:id', verifyToken, requireAdmin, (req, res) => {
     console.error('Delete post error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Catch-all handler for debugging
+app.use('*', (req, res) => {
+  console.log('Unmatched route:', req.method, req.originalUrl, req.path);
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    availableRoutes: ['/', '/health', '/auth/login', '/blog/posts']
+  });
 });
 
 // Export serverless function
