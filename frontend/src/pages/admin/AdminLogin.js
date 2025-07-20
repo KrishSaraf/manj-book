@@ -11,7 +11,7 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login, isAuthenticated, error, clearError } = useAuth();
+  const { login, isAuthenticated, error, clearError, user } = useAuth();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/admin';
@@ -40,30 +40,45 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('=== FORM SUBMIT STARTED ===');
+    
     if (!formData.username || !formData.password) {
+      console.log('Missing credentials, aborting');
       return;
     }
 
+    console.log('Form data:', { username: formData.username, password: '***' });
     setIsLoading(true);
     
     try {
-      console.log('=== LOGIN ATTEMPT ===');
-      console.log('Credentials:', { username: formData.username, password: '***' });
+      console.log('=== CALLING LOGIN FUNCTION ===');
+      console.log('About to call login with:', { username: formData.username });
       
       const result = await login(formData);
       
-      console.log('=== LOGIN RESULT ===');
-      console.log('Result:', result);
+      console.log('=== LOGIN FUNCTION RETURNED ===');
+      console.log('Full result object:', result);
+      console.log('Result type:', typeof result);
+      console.log('Result keys:', result ? Object.keys(result) : 'null');
       
-      if (result.success) {
-        console.log('Login successful, navigating to:', from);
+      if (result && result.success) {
+        console.log('✅ Login successful!');
+        console.log('User data:', result.user);
+        console.log('Checking isAuthenticated():', isAuthenticated());
+        console.log('Current user state:', user);
         // The redirect will happen via the isAuthenticated check and Navigate component
       } else {
-        console.log('Login failed:', result.error);
+        console.log('❌ Login failed');
+        console.log('Error:', result ? result.error : 'No result returned');
+        console.log('Current error state:', error);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.log('=== EXCEPTION CAUGHT ===');
+      console.error('Login exception:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response);
     } finally {
+      console.log('=== LOGIN ATTEMPT FINISHED ===');
       setIsLoading(false);
     }
   };
