@@ -136,7 +136,7 @@ let users = [
   {
     id: 1,
     username: "girlfriend",
-    password: "$2a$12$8K4qLWYmFGZa8Q2vL1hWreH4P5Z6QQF7Kk8nYxY3vGfKE2QfN0W5C", // "nature2024" - proper bcrypt hash
+    password: "nature2024", // Back to plain text since bcrypt hash was wrong
     role: "admin",
     name: "Manjari"
   }
