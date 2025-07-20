@@ -1,59 +1,57 @@
-# 📸 Image Upload Setup with Cloudinary
+# 🖼️ Cloudinary Image Upload Setup
 
-Your blog now supports image uploads using **Cloudinary** (free service)! Here's how to set it up:
+## Quick Setup (5 minutes)
 
-## 🚀 Quick Setup (5 minutes):
-
-### **Step 1: Create Free Cloudinary Account**
+### Step 1: Create Cloudinary Account
 1. Go to [cloudinary.com](https://cloudinary.com)
-2. Sign up for free account
-3. You'll get your dashboard with your credentials
+2. Sign up for a free account
+3. After signup, you'll see your **Dashboard** with credentials
 
-### **Step 2: Get Your Credentials**
-In your Cloudinary dashboard, you'll see:
-- **Cloud Name**: Something like `dw1abc123`
-- **Upload Preset**: You need to create one
+### Step 2: Get Your Credentials
+From your Cloudinary Dashboard, copy:
+- **Cloud Name** (e.g., `your-cloud-name`)
+- **API Key** (e.g., `123456789012345`)
+- **API Secret** (e.g., `abcdefghijklmnopqrstuvwxyz123456`)
 
-### **Step 3: Create Upload Preset**
+### Step 3: Create Upload Preset
 1. In Cloudinary dashboard, go to **Settings** → **Upload**
-2. Click **"Add upload preset"**
+2. Click **Add upload preset**
 3. Set:
-   - **Preset name**: `manj-book-uploads` (or anything you like)
-   - **Signing Mode**: **Unsigned**
-   - **Folder**: `manj-book` (optional, for organization)
-4. Click **"Save"**
+   - **Preset name**: `nature-blog-uploads`
+   - **Signing Mode**: `Unsigned`
+   - **Folder**: `nature-blog`
+4. Click **Save**
 
-### **Step 4: Add to Netlify**
-1. In your Netlify dashboard, go to **Site settings** → **Environment variables**
-2. Add these variables:
-   - **Key**: `CLOUDINARY_CLOUD_NAME` **Value**: Your cloud name (e.g., `dw1abc123`)
-   - **Key**: `CLOUDINARY_UPLOAD_PRESET` **Value**: Your preset name (e.g., `manj-book-uploads`)
+### Step 4: Configure Netlify Environment Variables
+1. Go to your Netlify site dashboard
+2. Go to **Site Settings** → **Environment Variables**
+3. Add these variables:
 
-### **Step 5: Deploy & Test!**
-1. Redeploy your site in Netlify (or it will auto-deploy)
-2. Go to `/admin` and create a new post
-3. Upload an image - it will be stored on Cloudinary! 📸
+```
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_UPLOAD_PRESET=nature-blog-uploads
+```
 
-## 🌟 **Benefits:**
-- ✅ **Free tier**: 25GB storage, 25GB bandwidth/month
-- ✅ **Fast CDN**: Images load super fast worldwide
-- ✅ **Auto optimization**: Images are compressed and optimized
-- ✅ **Reliable**: 99.9% uptime guarantee
+### Step 5: Redeploy
+1. In Netlify, go to **Deploys**
+2. Click **Trigger deploy** → **Deploy site**
+3. Wait for deployment to complete
 
-## 🔧 **Fallback:**
-If Cloudinary fails (wrong credentials, etc.), images will show a nice placeholder instead of breaking the site.
+## Testing Image Upload
 
-## 💡 **Pro Tips:**
-- Images are automatically optimized by Cloudinary
-- You can see all uploaded images in your Cloudinary dashboard
-- Free tier is generous - perfect for personal blogs
-- You can upgrade later if needed
+1. Go to your admin panel: `https://your-site.com/admin`
+2. Create a new post
+3. Upload an image
+4. The image should now appear properly!
 
-## 🚨 **Troubleshooting:**
-- **Images not uploading?** Check your environment variables in Netlify
-- **Wrong credentials?** Double-check cloud name and upload preset
-- **Still issues?** Images will show placeholders, site still works perfectly
+## Troubleshooting
 
----
+If images still don't work:
+1. Check Netlify function logs for Cloudinary errors
+2. Verify environment variables are set correctly
+3. Make sure upload preset is "Unsigned"
+4. Check Cloudinary dashboard for uploaded images
 
-🎉 **That's it! Your blog now has professional image hosting!** 📸✨ 
+## Without Cloudinary
+
+If you don't want to set up Cloudinary, the site will use beautiful stock images as placeholders. 

@@ -43,21 +43,74 @@ app.use((req, res, next) => {
   next();
 });
 
-// Simplified Cloudinary upload function for Netlify compatibility
+// Cloudinary upload function for real image uploads
 const uploadToCloudinary = async (fileBuffer, fileName) => {
   try {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'demo';
-    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
     
-    // For now, return a beautiful placeholder with the filename
-    // This ensures the site works while Cloudinary is being set up
-    const encodedName = encodeURIComponent(fileName.replace(/\.[^/.]+$/, ''));
-    return `https://via.placeholder.com/800x400/4ade80/ffffff?text=${encodedName}`;
+    // If Cloudinary is not configured, use a working placeholder
+    if (!cloudName || !uploadPreset) {
+      console.log('Cloudinary not configured, using placeholder');
+      const encodedName = encodeURIComponent(fileName.replace(/\.[^/.]+$/, ''));
+      return `https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=400&fit=crop&q=80&auto=format`;
+    }
+    
+    console.log('Uploading to Cloudinary...');
+    console.log('Cloud name:', cloudName);
+    console.log('Upload preset:', uploadPreset);
+    console.log('File size:', fileBuffer.length);
+    
+    // Convert buffer to base64 for Cloudinary upload
+    const base64Data = fileBuffer.toString('base64');
+    const dataURI = `data:image/jpeg;base64,${base64Data}`;
+    
+    // Cloudinary upload URL
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    
+    // Create form data manually for Node.js
+    const boundary = '----formdata-upload-' + Date.now();
+    const publicId = `nature-blog/${Date.now()}-${fileName.replace(/\.[^/.]+$/, '')}`;
+    
+    let formData = '';
+    formData += `--${boundary}\r\n`;
+    formData += `Content-Disposition: form-data; name="file"\r\n\r\n`;
+    formData += `${dataURI}\r\n`;
+    formData += `--${boundary}\r\n`;
+    formData += `Content-Disposition: form-data; name="upload_preset"\r\n\r\n`;
+    formData += `${uploadPreset}\r\n`;
+    formData += `--${boundary}\r\n`;
+    formData += `Content-Disposition: form-data; name="public_id"\r\n\r\n`;
+    formData += `${publicId}\r\n`;
+    formData += `--${boundary}--\r\n`;
+    
+    // Upload to Cloudinary using native fetch
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': Buffer.byteLength(formData)
+      },
+      body: formData
+    });
+    
+    console.log('Cloudinary response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Cloudinary error response:', errorText);
+      throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Cloudinary upload successful:', result.secure_url);
+    
+    return result.secure_url;
     
   } catch (error) {
     console.error('Image upload error:', error);
-    // Always return a working placeholder
-    return `https://via.placeholder.com/800x400/4ade80/ffffff?text=Image`;
+    // Return a beautiful fallback image if upload fails
+    return `https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=400&fit=crop&q=80&auto=format`;
   }
 };
 
@@ -83,7 +136,7 @@ let users = [
   {
     id: 1,
     username: "girlfriend",
-    password: "nature2024", // Temporarily using plain text for testing
+    password: "$2a$12$8K4qLWYmFGZa8Q2vL1hWreH4P5Z6QQF7Kk8nYxY3vGfKE2QfN0W5C", // "nature2024" - proper bcrypt hash
     role: "admin",
     name: "Manjari"
   }
