@@ -45,14 +45,27 @@ const AdminLogin = () => {
     }
 
     setIsLoading(true);
-    // The login function in useAuth handles success by updating context.
-    // We just need to call it and let the component re-render.
-    // It will set an error state on failure.
-    await login(formData); 
-    setIsLoading(false);
-
-    // The redirect logic is handled by the useEffect that watches for
-    // the `isAuthenticated` state change. No need to check for a result here.
+    
+    try {
+      console.log('=== LOGIN ATTEMPT ===');
+      console.log('Credentials:', { username: formData.username, password: '***' });
+      
+      const result = await login(formData);
+      
+      console.log('=== LOGIN RESULT ===');
+      console.log('Result:', result);
+      
+      if (result.success) {
+        console.log('Login successful, navigating to:', from);
+        // The redirect will happen via the isAuthenticated check and Navigate component
+      } else {
+        console.log('Login failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

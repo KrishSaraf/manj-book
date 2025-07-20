@@ -48,11 +48,49 @@ export const authAPI = {
   getProfile: () => api.get(`${API_BASE_PATH}/auth/profile`),
 };
 
-// Blog API calls (Public) - USING ABSOLUTE PATHS
+// Blog API calls - USING ABSOLUTE PATHS
 export const blogAPI = {
+  // Public endpoints
   getPosts: (params) => api.get(`${API_BASE_PATH}/blog/posts`, { params }),
-  getPostById: (id) => api.get(`${API_BASE_PATH}/blog/posts/${id}`),
+  getPost: (id) => api.get(`${API_BASE_PATH}/blog/posts/${id}`),
+  getPostById: (id) => api.get(`${API_BASE_PATH}/blog/posts/${id}`), // Alias for compatibility
   getCategories: () => api.get(`${API_BASE_PATH}/blog/categories`),
+  
+  // Admin endpoints
+  getAdminPosts: () => api.get(`${API_BASE_PATH}/blog/admin/posts`),
+  createPost: (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (data[key] !== null && data[key] !== undefined) {
+        // Handle boolean values properly
+        if (key === 'is_published') {
+          formData.append(key, data[key] ? '1' : '0');
+        } else {
+          formData.append(key, data[key]);
+        }
+      }
+    });
+    return api.post(`${API_BASE_PATH}/blog/admin/posts`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  updatePost: (id, data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (data[key] !== null && data[key] !== undefined) {
+        // Handle boolean values properly
+        if (key === 'is_published') {
+          formData.append(key, data[key] ? '1' : '0');
+        } else {
+          formData.append(key, data[key]);
+        }
+      }
+    });
+    return api.put(`${API_BASE_PATH}/blog/admin/posts/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  deletePost: (id) => api.delete(`${API_BASE_PATH}/blog/admin/posts/${id}`),
 };
 
 // Blog API calls (Admin) - USING ABSOLUTE PATHS
