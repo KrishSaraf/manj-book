@@ -83,7 +83,7 @@ let users = [
   {
     id: 1,
     username: "girlfriend",
-    password: "$2a$12$LQKvHWXz8z2/5q8tC.ZE7OV9mZOzP0kJN8rqWzXy2X0Q3c4b5A6mS", // "nature2024"
+    password: "nature2024", // Temporarily using plain text for testing
     role: "admin",
     name: "Manjari"
   }
@@ -176,7 +176,26 @@ router.post('/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('=== PASSWORD VERIFICATION ===');
+    console.log('Provided password:', password);
+    console.log('Stored password:', user.password);
+    console.log('Attempting password comparison...');
+    
+    // Temporarily use plain text comparison for testing
+    let isValidPassword;
+    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+      // It's a bcrypt hash
+      console.log('Using bcrypt comparison');
+      isValidPassword = await bcrypt.compare(password, user.password);
+    } else {
+      // It's plain text (for testing only)
+      console.log('Using plain text comparison');
+      isValidPassword = password === user.password;
+    }
+    
+    console.log('Password comparison result:', isValidPassword);
+    console.log('Type of result:', typeof isValidPassword);
+    
     if (!isValidPassword) {
       console.log('Invalid password for user:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
